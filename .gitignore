@@ -13,12 +13,15 @@ secrets/
 .hermes/logs/
 .hermes/cache/
 .hermes/*.db
+# SOUL.md is intentional, versioned agent behavior.
+!.hermes/SOUL.md
 
 # Codex: version non-secret instructions/config only
 .codex/auth.json
 .codex/session_store.jsonl
 .codex/sessions/
 .codex/log/
+.codex/tmp/
 
 # Local/editor/container artifacts
 .DS_Store
