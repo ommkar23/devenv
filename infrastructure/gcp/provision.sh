@@ -33,8 +33,10 @@ fi
 if ! gcloud compute firewall-rules describe "$FIREWALL_RULE" --project="$PROJECT_ID" >/dev/null 2>&1; then
   gcloud compute firewall-rules create "$FIREWALL_RULE" \
     --project="$PROJECT_ID" --network=default --direction=INGRESS --priority=1000 \
-    --action=ALLOW --rules=tcp:22 --source-ranges="$SSH_CIDR" --target-tags="$NETWORK_TAG"
+    --action=ALLOW --rules=tcp:22,tcp:2222 --source-ranges="$SSH_CIDR" --target-tags="$NETWORK_TAG"
 fi
+gcloud compute firewall-rules update "$FIREWALL_RULE" --project="$PROJECT_ID" \
+  --rules=tcp:22,tcp:2222 --source-ranges="$SSH_CIDR" --quiet
 
 if ! gcloud compute instances describe "$INSTANCE" --zone="$ZONE" --project="$PROJECT_ID" >/dev/null 2>&1; then
   public_key="$(tr -d '\n' < "$SSH_PUBLIC_KEY_FILE")"

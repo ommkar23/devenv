@@ -4,10 +4,19 @@ USER root
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential ca-certificates clang cmake curl direnv fd-find fzf \
-    git git-lfs gnupg2 jq less make openssh-client pkg-config procps \
+    git git-lfs gnupg2 jq less make openssh-client openssh-server pkg-config procps \
     python3 python3-pip python3-venv ripgrep rsync shellcheck sudo tmux \
     tree unzip vim wget yq zip zsh \
     && rm -rf /var/lib/apt/lists/*
+
+# Match the GCE host's `op` UID (1001), so /workspace bind mounts stay writable.
+RUN groupadd --gid 1001 op \
+    && useradd --uid 1001 --gid 1001 --create-home --shell /bin/bash op \
+    && usermod -aG sudo op \
+    && printf 'op ALL=(ALL) NOPASSWD:ALL\n' > /etc/sudoers.d/op \
+    && chmod 440 /etc/sudoers.d/op \
+    && install -d -o op -g op -m 700 /home/op/.ssh /run/sshd \
+    && printf '%s\n' 'PasswordAuthentication no' 'PermitRootLogin no' 'PubkeyAuthentication yes' 'AllowUsers op' > /etc/ssh/sshd_config.d/devenv.conf
 
 # Node.js is required for Codex CLI.
 RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - \
@@ -28,12 +37,12 @@ RUN curl -fsSL https://packages.cloud.google.com/apt/doc/apt-key.gpg \
     && apt-get install -y --no-install-recommends google-cloud-cli \
     && rm -rf /var/lib/apt/lists/*
 
-USER vscode
+USER op
 
 # Official Hermes CLI installer; runtime state is redirected at container start.
 RUN env -u HERMES_HOME curl -fsSL https://hermes-agent.nousresearch.com/install.sh | bash
 
-ENV PATH="/home/vscode/.local/bin:${PATH}"
+ENV PATH="/home/op/.local/bin:${PATH}"
 ENV HERMES_HOME="/workspace/devenv/.hermes"
 ENV CODEX_HOME="/workspace/devenv/.codex"
 WORKDIR /workspace/devenv
