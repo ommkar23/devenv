@@ -1,0 +1,2 @@
+# One SSH Git URL per line. Repositories clone beside /workspace/devenv.
+# git@github.com:ommkar23/example-project.git

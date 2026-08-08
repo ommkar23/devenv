@@ -1,0 +1,6 @@
+# Portable, non-secret Hermes baseline.
+# Provider credentials are loaded at runtime from a secret provider.
+terminal:
+  cwd: /workspace
+security:
+  redact_secrets: true
