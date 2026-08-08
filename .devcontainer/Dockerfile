@@ -39,8 +39,8 @@ RUN curl -fsSL https://packages.cloud.google.com/apt/doc/apt-key.gpg \
 
 USER op
 
-# Official Hermes CLI installer; runtime state is redirected at container start.
-RUN env -u HERMES_HOME curl -fsSL https://hermes-agent.nousresearch.com/install.sh | bash
+# Skip Playwright/Chromium: Zed handles editor browsing, and this prevents a huge image build.
+RUN env -u HERMES_HOME bash -c 'curl -fsSL https://hermes-agent.nousresearch.com/install.sh | bash -s -- --skip-browser --skip-setup --non-interactive'
 
 ENV PATH="/home/op/.local/bin:${PATH}"
 ENV HERMES_HOME="/workspace/devenv/.hermes"
