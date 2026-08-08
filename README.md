@@ -38,3 +38,7 @@ The secret is written with mode `600` under `/run`, never to the Git checkout. D
 ## GCP host
 
 `infrastructure/gcp/provision.sh` creates the GCE VM, a static IP, a firewall limited to one source CIDR, and a VM service account. `bootstrap-host.sh` installs Docker and clones this repository on the VM. Use a repository deploy key—not a personal SSH key—to clone the private repository.
+
+### Direct container SSH
+
+After building the image on the GCE host, run `infrastructure/gcp/start-container.sh` as `op`. Zed then connects directly to `op@<VM-IP>` on port `2222`; the container contains Hermes and Codex. Stop it when idle with `infrastructure/gcp/stop-container.sh`. The container has no restart policy.
