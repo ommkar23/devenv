@@ -12,6 +12,9 @@ DEBIAN_FRONTEND=noninteractive apt-get install -y \
 systemctl enable --now docker
 usermod -aG docker "$DEV_USER"
 install -d -o "$DEV_USER" -g "$DEV_USER" -m 0755 "$WORKSPACE_ROOT"
+sudo -u "$DEV_USER" mkdir -p "/home/$DEV_USER/.ssh"
+sudo -u "$DEV_USER" chmod 700 "/home/$DEV_USER/.ssh"
+sudo -u "$DEV_USER" ssh-keyscan -H github.com >> "/home/$DEV_USER/.ssh/known_hosts"
 
 if [[ ! -d "$WORKSPACE_ROOT/devenv/.git" ]]; then
   sudo -u "$DEV_USER" git clone "$REPO_URL" "$WORKSPACE_ROOT/devenv"
