@@ -16,6 +16,6 @@ docker run -d --name "$name" --restart=no --user root \
   --mount type=bind,source=/workspace,target=/workspace \
   --mount type=bind,source=/home/op/.ssh/authorized_keys,target=/home/op/.ssh/authorized_keys,readonly \
   --workdir /workspace/devenv \
-  "$image" sh -c 'install -d -m 755 -o root -g root /run/sshd && ssh-keygen -A && exec /usr/sbin/sshd -D -e'
+  "$image" sh -c 'ln -sf /home/op/.local/bin/hermes /usr/local/bin/hermes && install -d -m 755 -o root -g root /run/sshd && ssh-keygen -A && exec /usr/sbin/sshd -D -e'
 
 echo "devenv started: ssh -p 2222 op@<VM-IP>"
