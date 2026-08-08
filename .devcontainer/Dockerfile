@@ -15,7 +15,8 @@ RUN groupadd --gid 1001 op \
     && usermod -aG sudo op \
     && printf 'op ALL=(ALL) NOPASSWD:ALL\n' > /etc/sudoers.d/op \
     && chmod 440 /etc/sudoers.d/op \
-    && install -d -o op -g op -m 700 /home/op/.ssh /run/sshd \
+    && install -d -o op -g op -m 700 /home/op/.ssh \
+    && install -d -m 755 /run/sshd \
     && printf '%s\n' 'PasswordAuthentication no' 'PermitRootLogin no' 'PubkeyAuthentication yes' 'AllowUsers op' > /etc/ssh/sshd_config.d/devenv.conf
 
 # Node.js is required for Codex CLI.
