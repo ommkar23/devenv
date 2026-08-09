@@ -93,6 +93,7 @@ When explaining `hermes tools list`, distinguish three layers: platform configur
 - Do not report web-search capability until the MCP tools are loaded into the active session.
 - Do not equate `✓ enabled` in `hermes tools list` with a callable tool in an already-running session; report the named platform and inspect the active schema.
 - Avoid broad negative claims when platform configuration and active-session exposure differ. State the scoped discrepancy instead.
+- Do not treat a read-only SSH key during PR handoff as a repository failure. Preserve the prepared commit, authenticate GitHub CLI via HTTPS with the user present, configure Git credential integration, and verify the pushed remote commit before creating the PR.
 - A long denylist for Hermes runtime files is fragile because new cache and state files appear over time; use a narrow allowlist when only personal configuration belongs in version control.
 - Do not treat memory files as ordinary preferences by default: they may contain learned personal facts or sensitive context. Version them only when the user explicitly requests that scope.
 
