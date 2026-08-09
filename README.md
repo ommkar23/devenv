@@ -5,15 +5,20 @@ Portable, GitHub-backed agentic development environment. The primary workflow is
 ## Included
 
 - Hermes CLI with `HERMES_HOME=/workspace/devenv/.hermes`
-- Git, Git LFS, GitHub CLI, SSH, Python + uv, Node.js, compilers, CMake, Docker + Compose, tmux, jq/yq, ripgrep, and Google Cloud CLI
+- Git, Git LFS, GitHub CLI, SSH, Python + uv, Node.js, compilers, CMake, Docker + Compose, tmux, jq/yq, and ripgrep
 - Non-secret Hermes configuration tracked in Git
 
-## Open the environment (primary: host VM)
+## Bootstrap any Ubuntu/Debian VM
 
-Provision the VM, clone this repository at `/workspace/devenv`, then run the idempotent host bootstrap as `op`:
+The provider-neutral bootstrap is `scripts/bootstrap-host.sh`. It installs the
+host-native development toolchain, Docker, GitHub CLI, Hermes, and the
+`HERMES_HOME` environment. It does not create cloud infrastructure or install
+a cloud-provider CLI.
+
+After cloning this repository at `/workspace/devenv`, run it as `op`:
 
 ```bash
-ssh op@<VM-IP> 'cd /workspace/devenv && sudo infrastructure/gcp/bootstrap-host.sh'
+ssh op@<VM-IP> 'cd /workspace/devenv && sudo scripts/bootstrap-host.sh'
 ```
 
 Reconnect after the script completes (Docker group membership applies on the next login). Zed connects directly to the host SSH service:
@@ -76,6 +81,15 @@ The secret is written with mode `600` under the user's runtime directory (or a p
 
 ## GCP host
 
-`infrastructure/gcp/provision.sh` creates the GCE VM, a static IP, a firewall limited to one source CIDR on SSH port `22`, and a VM service account. `bootstrap-host.sh` installs the host-native toolchain, Docker, and this repository's runtime configuration. Use a repository deploy key—not a personal SSH key—to clone the private repository.
+`infrastructure/gcp/provision.sh` creates the GCE VM, a static IP, a firewall limited to one source CIDR on SSH port `22`, and a VM service account. The GCP wrapper `infrastructure/gcp/bootstrap-host.sh` runs the provider-neutral bootstrap and then installs the Google Cloud CLI for GCP Secret Manager use. Use a repository deploy key—not a personal SSH key—to clone the private repository.
+
+On GCP, use the wrapper instead of the generic command when you need `gcloud`:
+
+```bash
+ssh op@<VM-IP> 'cd /workspace/devenv && sudo infrastructure/gcp/bootstrap-host.sh'
+```
+
+For another cloud provider, use `scripts/bootstrap-host.sh` and add only that
+provider's CLI/secrets integration in a separate provider wrapper.
 
 Stopping the VM when the environment is idle stops compute billing; stopping individual processes does not.
