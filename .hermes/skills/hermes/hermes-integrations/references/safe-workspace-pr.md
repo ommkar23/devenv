@@ -56,4 +56,14 @@ If fetch works but push reports a read-only SSH key, treat that as an authentica
 
 After `gh pr create`, verify with `gh pr view --json url,title,isDraft,state,baseRefName,headRefName,commits,files`. Require an open draft, the intended base/head, the reviewed file list, matching local/remote commit IDs, and a returned URL before reporting success.
 
+## Finalization after PR creation
+
+Tracked skills may be refined by Hermes maintenance during or immediately after the workflow. Before reporting the PR complete, switching branches, or pulling the base branch:
+
+1. Run a final `git status --short --branch` after all maintenance has settled.
+2. If new intentional changes exist, inspect and classify them before proceeding.
+3. Prefer amending the still-open draft PR when the changes belong to its stated scope, then push and re-verify the PR commit and file list.
+4. If the original PR is already merged or the additions deserve separate review, create a focused follow-up branch and draft PR.
+5. Do not silently omit, discard, or merely stash intentional refinements. If stashing is temporarily necessary to protect work, explain immediately what was preserved, why it was not included, and the concrete review path.
+
 If push or PR creation requires user authentication, preserve the prepared local branch and commit, request only the minimum authentication action, and resume verification afterward. Do not claim that a PR exists until a verifiable URL is returned.

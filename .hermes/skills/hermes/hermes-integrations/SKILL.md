@@ -66,6 +66,7 @@ When a repository versions a Hermes home, distinguish durable personal configura
 3. Remember that ignore rules do not untrack files already in Git. Review the tracked set separately and obtain consent before removing anything from the index.
 4. Verify both sides of the contract: intended configuration remains versionable, representative runtime artifacts are ignored, and no unexpected `.hermes` files appear in `git status`.
 5. After changing ignore behavior, run a focused temporary verification script from an OS-safe temp path, execute it against the real repository behavior, report that it is ad-hoc verification rather than a project test-suite result, and remove it afterward.
+6. When the repository enforces a bundled-skill policy, compare the live packaged bundled catalog against `skills.disabled`; a static denylist can silently enable newly shipped skills after an update. Also verify bootstrap compatibility with pre-existing Hermes installations before relying on a newly introduced CLI subcommand: presence of `hermes` alone does not prove that subcommand exists.
 
 See `references/version-controlled-hermes-home.md` for a reusable allowlist pattern and verification checklist.
 

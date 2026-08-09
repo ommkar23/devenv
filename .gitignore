@@ -12,13 +12,15 @@ secrets/
 !.hermes/SOUL.md
 !.hermes/config.yaml
 
-# Version reusable skills and their supporting files, but not local Skill Hub
-# indexes, locks, or usage counters.
+# Bundled skills are seeded runtime/vendor content. Keep only intentionally
+# authored workspace skills under the dedicated `hermes/` category in Git.
 !.hermes/skills/
-!.hermes/skills/**
-.hermes/skills/.hub/
-.hermes/skills/.usage.json*
+.hermes/skills/**
+!.hermes/skills/hermes/
+!.hermes/skills/hermes/**
 
 # Local/editor artifacts
 .DS_Store
 *.log
+__pycache__/
+*.py[cod]
