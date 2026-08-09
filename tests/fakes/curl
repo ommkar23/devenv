@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+set -euo pipefail
+: "${COMMAND_LOG:?COMMAND_LOG is required}"
+printf 'curl %s\n' "$*" >>"$COMMAND_LOG"
+printf 'test-key-material\n'

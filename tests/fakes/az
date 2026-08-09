@@ -1,0 +1,187 @@
+#!/usr/bin/env bash
+# Deterministic Azure CLI stub used by the shell integration tests.
+set -euo pipefail
+
+: "${AZ_TEST_LOG:?AZ_TEST_LOG must point to the command log}"
+: "${AZ_TEST_STATE:?AZ_TEST_STATE must point to the fake state directory}"
+
+mkdir -p "$AZ_TEST_STATE"
+
+{
+  printf 'az'
+  printf ' %q' "$@"
+  printf '\n'
+} >>"$AZ_TEST_LOG"
+
+argument_value() {
+  local wanted="$1"
+  shift
+  while (($#)); do
+    if [[ "$1" == "$wanted" ]]; then
+      [[ $# -ge 2 ]] && printf '%s\n' "$2"
+      return 0
+    fi
+    shift
+  done
+  return 1
+}
+
+query="$(argument_value --query "$@" || true)"
+command_line="$*"
+
+if [[ -n "${AZ_TEST_LOOKUP_FAILURE:-}" && "$command_line" == "$AZ_TEST_LOOKUP_FAILURE"* ]]; then
+  printf '%s\n' 'ERROR: (AuthorizationFailed) fake lookup authorization failure' >&2
+  exit 1
+fi
+
+if [[ "${AZ_TEST_LOGIN_FAIL:-0}" == "1" && "$command_line" == "login --identity"* ]]; then
+  printf 'managed identity unavailable\n' >&2
+  exit 1
+fi
+if [[ "${AZ_TEST_SECRET_SHOW_FAIL:-0}" == "1" && "$command_line" == "keyvault secret show"* ]]; then
+  printf 'secret unavailable\n' >&2
+  exit 1
+fi
+if [[ "${AZ_TEST_SECRET_DOWNLOAD_FAIL:-0}" == "1" && "$command_line" == "keyvault secret download"* ]]; then
+  printf 'secret download unavailable\n' >&2
+  exit 1
+fi
+
+case "$command_line" in
+  "login --identity"*)
+    printf '[]\n'
+    ;;
+  "keyvault secret set "*)
+    printf '{"name":"test-secret"}\n'
+    ;;
+  "keyvault secret show "*)
+    printf '%s\n' "${AZ_TEST_SECRET_VALUE:-TEST_SECRET_VALUE}"
+    ;;
+  "keyvault secret download "*)
+    secret_file="$(argument_value --file "$@")"
+    printf '%s\n' "${AZ_TEST_SECRET_VALUE:-TEST_SECRET_VALUE}" >"$secret_file"
+    ;;
+  "version"|"--version")
+    printf '{"azure-cli":"test"}\n'
+    ;;
+  "account show "*)
+    if [[ "$query" == "id" ]]; then
+      printf '%s\n' "${AZ_TEST_SUBSCRIPTION:-sub-test}"
+    elif [[ "$query" == "state" ]]; then
+      printf '%s\n' "Enabled"
+    else
+      printf '{"id":"%s","state":"Enabled"}\n' "${AZ_TEST_SUBSCRIPTION:-sub-test}"
+    fi
+    ;;
+  "account set "*)
+    ;;
+  "group exists "*)
+    if [[ -f "$AZ_TEST_STATE/resource-group" ]]; then
+      printf '%s\n' true
+    else
+      printf '%s\n' false
+    fi
+    ;;
+  "group create "*)
+    touch "$AZ_TEST_STATE/resource-group"
+    printf '{}\n'
+    ;;
+  "network vnet subnet show "*|"network nsg rule show "*|\
+  "network vnet show "*|"network nsg show "*|"network public-ip show "*)
+    printf '%s\n' 'ERROR: (ResourceNotFound) fake resource is absent' >&2
+    exit 1
+    ;;
+  "network vnet create "*|"network vnet subnet create "*|\
+  "network nsg create "*|"network nsg rule create "*|"network nsg rule update "*|\
+  "network public-ip create "*)
+    printf '{}\n'
+    ;;
+  "network nic show "*)
+    printf '%s\n' 'ERROR: (ResourceNotFound) fake resource is absent' >&2
+    exit 1
+    ;;
+  "network nic create "*)
+    printf '{}\n'
+    ;;
+  "vm show "*)
+    if [[ "${AZ_TEST_EXISTING_VM:-0}" != "1" ]]; then
+      printf '%s\n' 'ERROR: (ResourceNotFound) fake resource is absent' >&2
+      exit 1
+    fi
+    case "$query" in
+      id) printf '%s\n' '/subscriptions/sub-test/resourceGroups/devenv-rg/providers/Microsoft.Compute/virtualMachines/devenv-01' ;;
+      location) printf '%s\n' centralindia ;;
+      hardwareProfile.vmSize) printf '%s\n' "${AZ_TEST_VM_SIZE:-Standard_D2s_v5}" ;;
+      securityProfile.securityType) printf '%s\n' TrustedLaunch ;;
+      securityProfile.uefiSettings.secureBootEnabled) printf '%s\n' "${AZ_TEST_SECURE_BOOT:-true}" ;;
+      securityProfile.uefiSettings.vTpmEnabled) printf '%s\n' "${AZ_TEST_VTPM:-true}" ;;
+      storageProfile.osDisk.diskSizeGb) printf '%s\n' "${AZ_TEST_DISK_SIZE:-100}" ;;
+      storageProfile.osDisk.managedDisk.storageAccountType) printf '%s\n' "${AZ_TEST_DISK_SKU:-StandardSSD_LRS}" ;;
+      'networkProfile.networkInterfaces[0].id') printf '%s\n' '/subscriptions/sub-test/resourceGroups/devenv-rg/providers/Microsoft.Network/networkInterfaces/devenv-nic' ;;
+      storageProfile.imageReference.publisher) printf '%s\n' Canonical ;;
+      storageProfile.imageReference.offer) printf '%s\n' ubuntu-24_04-lts ;;
+      storageProfile.imageReference.sku) printf '%s\n' server ;;
+      storageProfile.imageReference.exactVersion) printf '%s\n' 24.04.test ;;
+      *) printf '{}\n' ;;
+    esac
+    ;;
+  "vm create "*)
+    printf '{"id":"/subscriptions/sub-test/resourceGroups/devenv-rg/providers/Microsoft.Compute/virtualMachines/devenv-01","powerState":"VM running"}\n'
+    ;;
+  "vm identity show "*)
+    if [[ "${AZ_TEST_IDENTITY_MISSING:-0}" == "1" && ! -f "$AZ_TEST_STATE/identity-assigned" ]]; then
+      exit 1
+    fi
+    if [[ "$query" == "principalId" ]]; then
+      printf '%s\n' principal-test
+    else
+      printf '{"principalId":"principal-test"}\n'
+    fi
+    ;;
+  "vm identity assign "*)
+    touch "$AZ_TEST_STATE/identity-assigned"
+    printf '{}\n'
+    ;;
+  "vm update "*)
+    printf '{}\n'
+    ;;
+  "keyvault show "*)
+    if [[ -f "$AZ_TEST_STATE/key-vault" ]]; then
+      if [[ "$query" == "id" ]]; then
+        printf '%s\n' "/subscriptions/sub-test/resourceGroups/devenv-rg/providers/Microsoft.KeyVault/vaults/devenv-test-vault"
+      else
+        printf '{"id":"/subscriptions/sub-test/resourceGroups/devenv-rg/providers/Microsoft.KeyVault/vaults/devenv-test-vault","location":"centralindia","properties":{"enableRbacAuthorization":true}}\n'
+      fi
+    else
+      printf '%s\n' 'ERROR: (ResourceNotFound) fake resource is absent' >&2
+      exit 1
+    fi
+    ;;
+  "keyvault create "*)
+    touch "$AZ_TEST_STATE/key-vault"
+    if [[ "$query" == "id" ]]; then
+      printf '%s\n' "/subscriptions/sub-test/resourceGroups/devenv-rg/providers/Microsoft.KeyVault/vaults/devenv-test-vault"
+    else
+      printf '{"id":"/subscriptions/sub-test/resourceGroups/devenv-rg/providers/Microsoft.KeyVault/vaults/devenv-test-vault"}\n'
+    fi
+    ;;
+  "role assignment list "*)
+    printf '%s\n' "${AZ_TEST_ROLE_COUNT:-0}"
+    ;;
+  "role assignment create "*)
+    role_attempt_file="$AZ_TEST_STATE/role-attempts"
+    role_attempts=0
+    [[ ! -f "$role_attempt_file" ]] || role_attempts="$(<"$role_attempt_file")"
+    role_attempts=$((role_attempts + 1))
+    printf '%s\n' "$role_attempts" >"$role_attempt_file"
+    if ((role_attempts <= ${AZ_TEST_ROLE_CREATE_FAILURES:-0})); then
+      printf '%s\n' 'ERROR: (PrincipalNotFound) fake identity propagation delay' >&2
+      exit 1
+    fi
+    printf '{}\n'
+    ;;
+  *)
+    # Resource creation subcommands that do not need output in this scenario.
+    printf '{}\n'
+    ;;
+esac

@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+set -euo pipefail
+: "${COMMAND_LOG:?COMMAND_LOG is required}"
+printf 'gpg %s\n' "$*" >>"$COMMAND_LOG"
+while IFS= read -r _; do :; done

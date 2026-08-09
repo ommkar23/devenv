@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+set -euo pipefail
+: "${COMMAND_LOG:?COMMAND_LOG is required}"
+printf 'apt-get %s\n' "$*" >>"$COMMAND_LOG"
+if [[ " $* " == *" install "* && " $* " == *" azure-cli "* ]]; then
+  cp "${AZ_TEST_AZ_TEMPLATE:?}" "${AZ_TEST_DYNAMIC_BIN:?}/az"
+  chmod +x "$AZ_TEST_DYNAMIC_BIN/az"
+fi
