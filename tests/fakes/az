@@ -119,7 +119,7 @@ case "$command_line" in
       securityProfile.securityType) printf '%s\n' TrustedLaunch ;;
       securityProfile.uefiSettings.secureBootEnabled) printf '%s\n' "${AZ_TEST_SECURE_BOOT:-true}" ;;
       securityProfile.uefiSettings.vTpmEnabled) printf '%s\n' "${AZ_TEST_VTPM:-true}" ;;
-      storageProfile.osDisk.diskSizeGb) printf '%s\n' "${AZ_TEST_DISK_SIZE:-100}" ;;
+      storageProfile.osDisk.diskSizeGB) printf '%s\n' "${AZ_TEST_DISK_SIZE:-100}" ;;
       storageProfile.osDisk.managedDisk.storageAccountType) printf '%s\n' "${AZ_TEST_DISK_SKU:-StandardSSD_LRS}" ;;
       'networkProfile.networkInterfaces[0].id') printf '%s\n' '/subscriptions/sub-test/resourceGroups/devenv-rg/providers/Microsoft.Network/networkInterfaces/devenv-nic' ;;
       storageProfile.imageReference.publisher) printf '%s\n' Canonical ;;

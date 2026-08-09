@@ -312,7 +312,7 @@ if resource_exists vm show --resource-group "$RESOURCE_GROUP" --name "$VM_NAME";
   vm_security="$(az_value securityProfile.securityType vm show --resource-group "$RESOURCE_GROUP" --name "$VM_NAME")"
   vm_secure_boot="$(az_value securityProfile.uefiSettings.secureBootEnabled vm show --resource-group "$RESOURCE_GROUP" --name "$VM_NAME")"
   vm_vtpm="$(az_value securityProfile.uefiSettings.vTpmEnabled vm show --resource-group "$RESOURCE_GROUP" --name "$VM_NAME")"
-  vm_disk_size="$(az_value storageProfile.osDisk.diskSizeGb vm show --resource-group "$RESOURCE_GROUP" --name "$VM_NAME")"
+  vm_disk_size="$(az_value storageProfile.osDisk.diskSizeGB vm show --resource-group "$RESOURCE_GROUP" --name "$VM_NAME")"
   vm_disk_sku="$(az_value storageProfile.osDisk.managedDisk.storageAccountType vm show --resource-group "$RESOURCE_GROUP" --name "$VM_NAME")"
   vm_nic_id="$(az_value 'networkProfile.networkInterfaces[0].id' vm show --resource-group "$RESOURCE_GROUP" --name "$VM_NAME")"
   vm_image_publisher="$(az_value storageProfile.imageReference.publisher vm show --resource-group "$RESOURCE_GROUP" --name "$VM_NAME")"
