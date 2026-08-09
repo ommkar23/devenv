@@ -17,7 +17,7 @@ export DEBIAN_FRONTEND=noninteractive
 apt-get update
 apt-get install -y \
   build-essential ca-certificates clang cmake curl direnv fd-find fzf \
-  git git-lfs gnupg jq less make openssh-client pkg-config procps \
+  gh git git-lfs gnupg jq less make openssh-client pkg-config procps \
   python3 python3-pip python3-venv ripgrep rsync shellcheck sudo tmux \
   tree unzip vim wget xz-utils yq zip zsh docker.io docker-compose-v2
 systemctl enable --now docker

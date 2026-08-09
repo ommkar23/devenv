@@ -5,7 +5,7 @@ Portable, GitHub-backed agentic development environment. The primary workflow is
 ## Included
 
 - Hermes CLI with `HERMES_HOME=/workspace/devenv/.hermes`
-- Git, Git LFS, SSH, GitHub-ready tooling, Python + uv, Node.js, compilers, CMake, Docker + Compose, tmux, jq/yq, ripgrep, and Google Cloud CLI
+- Git, Git LFS, GitHub CLI, SSH, Python + uv, Node.js, compilers, CMake, Docker + Compose, tmux, jq/yq, ripgrep, and Google Cloud CLI
 - Non-secret Hermes configuration tracked in Git
 
 ## Open the environment (primary: host VM)
