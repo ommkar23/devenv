@@ -7,6 +7,7 @@ REPO_URL="${REPO_URL:-git@github.com:ommkar23/devenv.git}"
 WORKSPACE_ROOT="${WORKSPACE_ROOT:-/workspace}"
 DEVENV_REPO="$WORKSPACE_ROOT/devenv"
 HERMES_HOME="$DEVENV_REPO/.hermes"
+export HERMES_HOME
 
 [[ "${EUID}" -eq 0 ]] || { echo "Run with sudo: sudo $0" >&2; exit 1; }
 id "$DEV_USER" >/dev/null
@@ -72,5 +73,17 @@ if ! command -v hermes >/dev/null 2>&1; then
   curl -fsSL https://hermes-agent.nousresearch.com/install.sh \
     | bash -s -- --skip-browser --skip-setup --non-interactive
 fi
+
+# The global installer runs as root, but profile state belongs to the runtime
+# user. Always run the manifest-aware sync so existing hosts are repaired too.
+if ! hermes skills opt-in --help >/dev/null 2>&1; then
+  printf 'Installed Hermes is too old for bundled-skill repair; run hermes update --yes and retry.\n' >&2
+  exit 1
+fi
+chown -R "$DEV_USER:$DEV_USER" "$HERMES_HOME"
+sudo -u "$DEV_USER" env HERMES_HOME="$HERMES_HOME" \
+  hermes skills opt-in --sync
+sudo -u "$DEV_USER" env HERMES_HOME="$HERMES_HOME" \
+  python3 "$DEVENV_REPO/scripts/reconcile-hermes-bundled-skills.py"
 
 printf 'Host bootstrap complete. Reconnect as %s, then open /workspace/devenv from Zed over SSH port 22.\n' "$DEV_USER"

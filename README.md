@@ -45,6 +45,34 @@ Hermes credentials—including OpenAI Codex OAuth—are stored in the persistent
 Git-ignored `$HERMES_HOME/auth.json`. They survive normal VM stop/start and
 reboots because `/workspace/devenv` is on the VM boot disk.
 
+## Hermes skills policy
+
+The host bootstrap seeds Hermes' bundled skills into `$HERMES_HOME/skills`, but
+those vendor-managed copies and their sync manifest are ignored by Git. Only
+intentional workspace skills under `.hermes/skills/hermes/` are versioned.
+
+Bundled skills are disabled in the default profile. Create focused profiles by
+cloning the default profile, then selectively enable skills in that profile:
+
+```bash
+hermes profile create coder --clone
+hermes -p coder skills config
+```
+
+Using `--clone` is important: profiles are isolated, and cloning carries the
+default disabled-skill policy and seeded catalog into the new profile. Each
+profile then maintains its own `skills.disabled` list.
+
+After a Hermes update seeds newly bundled skills, reconcile the default
+denylist so new arrivals cannot become enabled implicitly:
+
+```bash
+python3 scripts/reconcile-hermes-bundled-skills.py
+```
+
+The host bootstrap runs this reconciliation automatically. If it adds a skill
+to `.hermes/config.yaml`, review and commit that intentional policy update.
+
 To authenticate with a ChatGPT/Codex subscription from your Mac, use device
 authentication so the VM never tries to open a browser:
 
