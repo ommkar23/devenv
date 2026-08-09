@@ -23,7 +23,6 @@ secrets/
 .codex/log/
 .codex/tmp/
 
-# Local/editor/container artifacts
+# Local/editor artifacts
 .DS_Store
 *.log
-.devcontainer/devcontainer.local.json

@@ -7,7 +7,13 @@ secret_name="${1:?Usage: load-gcp-secret.sh SECRET_NAME}"
 # Avoid path traversal when forming the runtime filename.
 [[ "$secret_name" =~ ^[A-Za-z0-9_-]+$ ]] || { echo "Invalid secret name" >&2; exit 2; }
 
-runtime_dir=/run/devenv/env
+# Prefer the user's system runtime directory (normally tmpfs). SSH-only hosts
+# may not provide one, so use a per-user private /tmp fallback.
+runtime_base="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}"
+if [[ ! -d "$runtime_base" || ! -w "$runtime_base" ]]; then
+  runtime_base="/tmp/devenv-$(id -u)"
+fi
+runtime_dir="$runtime_base/devenv/env"
 install -d -m 700 "$runtime_dir"
 output="$runtime_dir/${secret_name}.env"
 umask 077
