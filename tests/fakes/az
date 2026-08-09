@@ -86,8 +86,12 @@ case "$command_line" in
     touch "$AZ_TEST_STATE/resource-group"
     printf '{}\n'
     ;;
-  "network vnet subnet show "*|"network nsg rule show "*|\
-  "network vnet show "*|"network nsg show "*|"network public-ip show "*)
+  "network nsg rule show "*)
+    printf '%s\n' 'ERROR: (NotFound) fake child resource is absent' >&2
+    exit 1
+    ;;
+  "network vnet subnet show "*|"network vnet show "*|\
+  "network nsg show "*|"network public-ip show "*)
     printf '%s\n' 'ERROR: (ResourceNotFound) fake resource is absent' >&2
     exit 1
     ;;

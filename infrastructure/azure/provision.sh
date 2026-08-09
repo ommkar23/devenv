@@ -133,7 +133,7 @@ resource_exists() {
 
   lookup_error="$resource_id"
   case "$lookup_error" in
-    *"(ResourceNotFound)"*|*"(ResourceGroupNotFound)"*|*"(ParentResourceNotFound)"*|*"(VaultNotFound)"*)
+    *"(NotFound)"*|*"(ResourceNotFound)"*|*"(ResourceGroupNotFound)"*|*"(ParentResourceNotFound)"*|*"(VaultNotFound)"*)
       return 1
       ;;
     *)
