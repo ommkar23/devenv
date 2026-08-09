@@ -8,7 +8,6 @@ REPO_URL="${REPO_URL:-git@github.com:ommkar23/devenv.git}"
 WORKSPACE_ROOT="${WORKSPACE_ROOT:-/workspace}"
 DEVENV_REPO="$WORKSPACE_ROOT/devenv"
 HERMES_HOME="$DEVENV_REPO/.hermes"
-CODEX_HOME="$DEVENV_REPO/.codex"
 
 [[ "${EUID}" -eq 0 ]] || { echo "Run with sudo: sudo $0" >&2; exit 1; }
 id "$DEV_USER" >/dev/null
@@ -40,16 +39,19 @@ else
   sudo -u "$DEV_USER" git -C "$DEVENV_REPO" pull --ff-only
 fi
 
-install -d -o "$DEV_USER" -g "$DEV_USER" -m 0755 "$HERMES_HOME/skills" "$CODEX_HOME"
+install -d -o "$DEV_USER" -g "$DEV_USER" -m 0700 "$HERMES_HOME"
+install -d -o "$DEV_USER" -g "$DEV_USER" -m 0755 "$HERMES_HOME/skills"
 
 # Make the config homes available to interactive shells and ordinary SSH commands.
 cat > /etc/profile.d/devenv.sh <<EOF
 export HERMES_HOME="$HERMES_HOME"
-export CODEX_HOME="$CODEX_HOME"
 EOF
 chmod 0644 /etc/profile.d/devenv.sh
-grep -qxF "HERMES_HOME=$HERMES_HOME" /etc/environment || echo "HERMES_HOME=$HERMES_HOME" >> /etc/environment
-grep -qxF "CODEX_HOME=$CODEX_HOME" /etc/environment || echo "CODEX_HOME=$CODEX_HOME" >> /etc/environment
+environment_tmp="$(mktemp)"
+grep -v '^\(HERMES_HOME\|CODEX_HOME\)=' /etc/environment > "$environment_tmp" || true
+echo "HERMES_HOME=$HERMES_HOME" >> "$environment_tmp"
+install -m 0644 "$environment_tmp" /etc/environment
+rm -f "$environment_tmp"
 
 # Node.js 22 is required by Codex CLI. Do not reinstall when already present.
 if ! command -v node >/dev/null 2>&1 || ! node --version | grep -q '^v22\.'; then

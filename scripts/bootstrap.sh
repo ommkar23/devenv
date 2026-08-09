@@ -2,10 +2,9 @@
 set -euo pipefail
 
 : "${HERMES_HOME:=/workspace/devenv/.hermes}"
-: "${CODEX_HOME:=/workspace/devenv/.codex}"
-export HERMES_HOME CODEX_HOME
+export HERMES_HOME
 
-mkdir -p "$HERMES_HOME/skills" "$CODEX_HOME"
+mkdir -p "$HERMES_HOME/skills"
 
 # Opt-in: cloning is runtime work, never part of an image build.
 if [[ "${DEVENV_SYNC_PROJECTS:-0}" == "1" ]]; then

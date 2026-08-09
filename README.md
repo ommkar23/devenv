@@ -5,9 +5,8 @@ Portable, GitHub-backed agentic development environment. The primary workflow is
 ## Included
 
 - Hermes CLI with `HERMES_HOME=/workspace/devenv/.hermes`
-- Codex CLI with `CODEX_HOME=/workspace/devenv/.codex`
 - Git, Git LFS, SSH, GitHub-ready tooling, Python + uv, Node.js, compilers, CMake, Docker + Compose, tmux, jq/yq, ripgrep, and Google Cloud CLI
-- Non-secret Hermes/Codex configuration tracked in Git
+- Non-secret Hermes configuration tracked in Git
 
 ## Open the environment (primary: host VM)
 
@@ -27,14 +26,31 @@ The bootstrap persists:
 
 ```bash
 HERMES_HOME=/workspace/devenv/.hermes
-CODEX_HOME=/workspace/devenv/.codex
 ```
 
 Verify with:
 
 ```bash
-ssh op@<VM-IP> 'which hermes && hermes --version && which codex && codex --version && printf "%s\n%s\n" "$HERMES_HOME" "$CODEX_HOME"'
+ssh op@<VM-IP> 'which hermes && hermes --version && printf "%s\n" "$HERMES_HOME"'
 ```
+
+## Hermes authentication
+
+Hermes credentials—including OpenAI Codex OAuth—are stored in the persistent,
+Git-ignored `$HERMES_HOME/auth.json`. They survive normal VM stop/start and
+reboots because `/workspace/devenv` is on the VM boot disk.
+
+To authenticate with a ChatGPT/Codex subscription from your Mac, use device
+authentication so the VM never tries to open a browser:
+
+```bash
+ssh -t op@<VM-IP> 'hermes auth add openai-codex --type oauth --no-browser'
+```
+
+Complete the displayed browser flow, then run `hermes model` on the VM to
+select OpenAI Codex and the preferred model. Other providers can be added with
+`hermes auth add <provider>` or selected through `hermes model`. Do not commit
+`auth.json`, API keys, or session data.
 
 ## Projects
 
