@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+: "${HERMES_HOME:=/workspace/devenv/.hermes}"
+: "${CODEX_HOME:=/workspace/devenv/.codex}"
+export HERMES_HOME CODEX_HOME
+
 mkdir -p "$HERMES_HOME/skills" "$CODEX_HOME"
 
 # Opt-in: cloning is runtime work, never part of an image build.
