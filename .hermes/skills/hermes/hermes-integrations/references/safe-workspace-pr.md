@@ -37,10 +37,23 @@ git fetch origin
 git rebase origin/main
 git diff --check origin/main...HEAD
 git diff --name-status origin/main...HEAD
+git status --short --branch
 git push -u origin <topic-branch>
-gh pr create --draft --base main
+gh pr create --draft --base main --head <topic-branch> --fill
 ```
 
-Re-run the focused checks after rebasing because upstream changes can alter ignore behavior or configuration context. Verify the created PR's base, head, file list, draft state, and URL before reporting success.
+Re-run the focused checks after rebasing because upstream changes can alter ignore behavior or configuration context. Check the working tree again immediately before pushing; if intentional skill files changed during the workflow, inspect, explicitly stage, validate, and amend or commit them rather than silently omitting them.
+
+## GitHub authentication recovery
+
+If fetch works but push reports a read-only SSH key, treat that as an authentication-path problem rather than a repository failure:
+
+1. Preserve the prepared branch and commit; do not restage broadly or recreate the work.
+2. Run `gh auth status` without printing credential files or tokens.
+3. If unauthenticated and the user is present, run `gh auth login --hostname github.com --git-protocol https --web` and have the user complete the device flow.
+4. Run `gh auth setup-git`. If `origin` still uses an SSH URL tied to the read-only key, change only that remote to the repository's HTTPS URL, then retry the push.
+5. Verify `HEAD` equals the pushed remote branch before creating the PR.
+
+After `gh pr create`, verify with `gh pr view --json url,title,isDraft,state,baseRefName,headRefName,commits,files`. Require an open draft, the intended base/head, the reviewed file list, matching local/remote commit IDs, and a returned URL before reporting success.
 
 If push or PR creation requires user authentication, preserve the prepared local branch and commit, request only the minimum authentication action, and resume verification afterward. Do not claim that a PR exists until a verifiable URL is returned.
